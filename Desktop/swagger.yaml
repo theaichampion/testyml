@@ -1,0 +1,1130 @@
+swagger: '2.0'
+info:
+  description: >-
+    A6 APIs provide you with access to capabilities that enable the Ingestion
+    (/data), Analysis (/insights) and Distribution (/subscriptions) of sensor
+    data at scale.
+
+
+    Common use cases for A6 include:
+
+
+    * To collect telematics data from internet connected sensors
+     * To submit data to A6 use the Data API (POST)
+     * To interact with A6 data (submit, read) a GroupID and SensorID are required; to acquire these identifiers, use the Group API and Sensor API, respectively.
+
+    * To read data stored in A6 (data pull)
+     * To read data stored in A6, use the Data API (GET)
+
+    * To subscribe to data submitted to A6 (data push)
+     * To identify the insights categories available for subscription, use the [Insight API
+     * To subscribe to a particular insights category, use the Subscription API
+     * To authorize a subscription, use the Entitlement API
+
+    The purpose of this Swagger-enabled documentation is to help you understand
+    how A6 works by allowing you to interact with each API yourself: click on
+    the "Try it Out!" button in each section to submit real requests to each API
+    and to view actual responses on screen.
+  version: '1.0'
+  title: Allstate Sensor data & Insights eXchange (A_SIX = A6)
+  contact: {}
+  license: {}
+host: a6-api-staging.apps.nonprod-mpn.ro11.allstate.com
+basePath: /
+tags:
+  - name: entitlement
+    description: Entitlement API
+  - name: subscription
+    description: Subscription API
+  - name: data
+    description: Data API
+  - name: subscription
+    description: Subscription API
+  - name: data
+    description: Data API
+  - name: insight-engines
+    description: Insight Engines API
+  - name: subscription
+    description: Subscription API
+  - name: token
+    description: Token API
+  - name: data
+    description: Data API
+  - name: insights
+    description: Insight API
+  - name: data
+    description: Data API
+paths:
+  /data:
+    patch:
+      tags:
+        - data
+      summary: Update organization visibility
+      description: Use this operation to update your organization's data visibility
+      operationId: update_organization_visibility
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: organizationRequest
+          description: The organization request
+          required: true
+          schema:
+            $ref: '#/definitions/OrganizationRequest'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/OrganizationResponse'
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+  /entitlements:
+    post:
+      tags:
+        - entitlement
+      summary: Create a entitlement ID
+      description: >-
+        The Entitlement API is used by publishers (a developer submitting data
+        to A6) to authorize subscribers with access to data submitted to A6. 
+        The result of this action is the creation of an A6 "data entitlement".
+
+
+        The ability to grant entitlements is required because by default, the
+        only party with rights to read (/data) or receive (/subscriptions) data
+        submitted to A6 is the developer submitting data (as defined by
+        developer account credentials).
+
+
+        To provide others with access to your data, use the Entitlements API
+        (POST) to define the subscription ID you wish to authorize access to
+        your data.
+
+
+        You must acquire a subscription ID from the party requesting access to
+        your data. A subscription ID is generated when a subscription is
+        created. A6 does not facilitate the transfer of this ID – the transfer
+        must happen out of band.
+
+
+        **Important:** Retain access to the Entitlement ID provided after each
+        Entitlement response. You will need this ID if you wish to revoke
+        access/delete this entitlement in the future.
+      operationId: create_entitlement_id
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: entitlementRequest
+          description: Entitlement Request
+          required: true
+          schema:
+            $ref: '#/definitions/EntitlementRequest'
+      responses:
+        '201':
+          schema:
+            $ref: '#/definitions/EntitlementResponse'
+        '400':
+          description: Invalid Entitlement Request
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+  '/entitlements/{entitlementId}':
+    delete:
+      tags:
+        - entitlement
+      summary: Delete an entitlement
+      description: >-
+        To revoke a specific subscriber's access to your data, use the
+        Entitlements API (DELETE) to delete a specific entitlement by
+        entitlement ID.
+
+
+        The entitlement ID is provided to you when you create an entitlement
+        (POST).
+      operationId: delete_entitlement_id
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: entitlementId
+          in: path
+          description: Entitlement ID
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Entitlement Deleted
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Entitlement Not Found
+        '500':
+          description: General Server Exception
+  /groups:
+    post:
+      tags:
+        - data
+      summary: Create a group ID
+      description: >-
+        Group IDs and Sensor IDs are required to interact with A6. Relationally,
+        a Group can be thought of as the "parent" and the Sensor the "child"; a
+        Group ID can be associated to many Sensor IDs.
+
+
+        Use the Group API to request a Group ID.
+
+
+        A Group ID is required to create a Sensor ID.
+      operationId: create_group_id
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          schema:
+            $ref: '#/definitions/Group'
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+  /groups/sensors: {}
+  /groups/sensors/data: {}
+  '/groups/sensors/{sensorId}/data': {}
+  '/groups/{groupId}/sensors':
+    post:
+      tags:
+        - data
+      summary: Create a sensor ID
+      description: >-
+        Group IDs and Sensor IDs are required to interact with A6. Relationally,
+        a Group can be thought of as the "parent" and the Sensor the "child"; a
+        Group ID can be associated to many Sensor IDs.
+
+
+        Use the Sensor API to create a Sensor ID.
+
+
+        A Sensor ID is required to interact with A6 data (submit and read).
+      operationId: create_sensor_id
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: groupId
+          in: path
+          description: The group ID
+          required: true
+          type: string
+        - in: body
+          name: sensorRequest
+          description: Sensor Request
+          required: false
+          schema:
+            $ref: '#/definitions/User values for a sensor request'
+      responses:
+        '201':
+          schema:
+            $ref: '#/definitions/Sensor'
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Group Not Found
+        '500':
+          description: General Server Exception
+  '/groups/{groupId}/sensors/data': {}
+  '/groups/{groupId}/sensors/{sensorId}/data':
+    post:
+      tags:
+        - data
+      summary: Submit data
+      description: >-
+        Use this operation to submit sensor data into A6.
+
+
+        To submit data, a GroupID and SensorID are required.
+
+
+        A6 will only accept data in JSON format that conforms to defined A6
+        canonical models; as of August 4, 2015, the supported data formats
+        include: vehicle trip, vehicle health.
+
+
+        The request body must include a JSON payload.
+
+
+        The following payloads will trigger the "vehicle.trip.arrived" and
+        "vehicle.health.arrived" insights respectively:
+
+
+        `{ "tripSummaryUpload" : "string" }`
+
+
+        `{"vehicleHealthUpload" : "string"}`
+      operationId: submit_data
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: groupId
+          in: path
+          description: The group ID
+          required: true
+          type: string
+        - name: sensorId
+          in: path
+          description: The sensor ID
+          required: true
+          type: string
+        - in: body
+          name: data
+          description: The data
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+        '202':
+          description: OK
+        '400':
+          description: Request body is missing
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Sensor Not Found
+        '500':
+          description: General Server Exception
+        '503':
+          description: Service Unavailable
+  /insight_engines:
+    post:
+      tags:
+        - insight-engines
+      summary: Register an insight engine
+      description: |-
+        **A note on versioning:**
+
+         Optional: you can optionally define versions by using the 'api-version' header
+      operationId: register_insight_engine
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: insightEngineRequest
+          description: The insight engine request
+          required: true
+          schema:
+            $ref: '#/definitions/InsightEngineRequest'
+      responses:
+        '201':
+          description: Insight engine registered
+        '400':
+          description: Invalid insight engine request
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+  '/insight_engines/{insightEngineId}':
+    put:
+      tags:
+        - insight-engines
+      summary: Update an insight engine
+      description: >-
+        This API call allows you to update the webhook URI of your Insight
+        Engine. If you find yourself wanting to keep the insights and secret
+        intact, but desire to change the webhook, use this PUT request to do so.
+
+         **A note on Insight Engines:** 
+
+        Updates to 'insight' or 'secret' values will be ignored in this PUT
+        request.
+      operationId: update_insight_engine
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: insightEngineId
+          in: path
+          description: The insight engine ID
+          required: true
+          type: string
+        - in: body
+          name: insightEngineRequest
+          description: insightEngineRequest
+          required: true
+          schema:
+            $ref: '#/definitions/InsightEngineRequest'
+      responses:
+        '200':
+          description: Insight engine updated
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Insight engine not found
+        '500':
+          description: General Server Exception
+    delete:
+      tags:
+        - insight-engines
+      summary: Unregister an insight engine
+      operationId: unregister_insight_engine
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: insightEngineId
+          in: path
+          description: The insight engine ID
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Insight engine unregistered
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Insight engine not found
+        '500':
+          description: General Server Exception
+  '/insight_engines/{insightName}':
+    get:
+      tags:
+        - insight-engines
+      summary: Retrieve an insight engine by insight name
+      operationId: retrieve_insight_engine
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: insightName
+          in: path
+          description: insightName
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Insight engine returned
+          schema:
+            $ref: '#/definitions/InsightEngines'
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Insight/Insight Engine not found
+        '500':
+          description: General Server Exception
+  /insights:
+    get:
+      tags:
+        - insights
+      summary: Get available insights
+      description: >-
+        The Insight API is used to learn more about the most current A6 insights
+        categories available for subscription.
+
+
+        Use the Insight API to learn more about the current categories available
+        for subscription.
+
+
+        To create a subscription to a specific insight category, use the
+        Subscription API. A supported insights category (e.g.
+        "vehicle.trip.arrived") is required to create a subscription.
+      operationId: get_insights
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Insights'
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+    post:
+      tags:
+        - insights
+      summary: Submit an insight
+      operationId: submit_an_insight
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: insightRequest
+          description: The insight request
+          required: true
+          schema:
+            $ref: '#/definitions/InsightRequest'
+      responses:
+        '202':
+          description: OK
+        '400':
+          description: Invalid insight
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+  /sensors/data: {}
+  '/sensors/data/{dataId}': {}
+  '/sensors/{sensorId}/data':
+    get:
+      tags:
+        - data
+      summary: Get data by sensor ID
+      description: >-
+        **A note on data permissions:**
+
+
+        By default, the only party with rights to read (/data) and/or receive
+        (/subscriptions) data that you submit to A6 is you (as defined by your
+        developer account credentials).
+
+
+        To provide others with access to your data, use the "Entitlement API".
+
+
+        The final three attributes of the response body(page, size, total) allow
+        you to page the data. The 'page' represents the current page number in
+        view. The 'size' represents the number of data elements per page. The
+        'total' represents the total number of pages returned.
+
+         The data returned is sorted by date/time submitted, with most recent data returning first.
+      operationId: get_data_by_sensor_id
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: sensorId
+          in: path
+          description: The sensor ID
+          required: true
+          type: string
+        - name: page
+          in: query
+          description: The page of data to fetch
+          required: false
+          type: integer
+          default: '1'
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Page«Data»'
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Data Not Found
+        '500':
+          description: General Server Exception
+  '/sensors/{sensorId}/data/{dataId}':
+    get:
+      tags:
+        - data
+      summary: Find data by ID
+      description: Find data by ID
+      operationId: find_data_by_id
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: sensorId
+          in: path
+          description: The sensor ID
+          required: true
+          type: string
+        - name: dataId
+          in: path
+          description: The data ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Data'
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Data Not Found
+        '500':
+          description: General Server Exception
+  /subscriptions:
+    post:
+      tags:
+        - subscription
+      summary: Create a subscription
+      description: >-
+        Subscriptions enable developers to receive copies of data submitted to
+        or emanating from A6 via a push mechanism (Webhook).
+
+
+        To create a subscription, use the Subscription API (POST).
+
+
+        You must define the desired insight type when creating a subscription.
+
+
+        One subscription supports multiple event types.
+
+
+        **A note on subscriptions:**
+
+
+        By default, the permissions scope for data submitted to A6 is locked
+        down to the developer submitting the data.  If you create a subscription
+        to an insights type, a publisher must explicitly provide you with
+        permissions to the data before you will begin receiving data related to
+        the category of your subscription. The Entitlement API can be used by
+        publishers to enable an individual subscriber with access to the data
+        they publish to A6.
+      operationId: create_subscription
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: subscription
+          description: The subscription
+          required: true
+          schema:
+            $ref: '#/definitions/SubscriptionRequest'
+      responses:
+        '201':
+          schema:
+            $ref: '#/definitions/SubscriptionResponse'
+        '400':
+          description: Invalid Subscription Request
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+  '/subscriptions/{subscriptionId}':
+    get:
+      tags:
+        - subscription
+      summary: View a subscription
+      description: View a subscription implementation notes
+      operationId: view_subscription
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: The subscription ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SubscriptionResponse'
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Subscription Not Found
+        '500':
+          description: General Server Exception
+    put:
+      tags:
+        - subscription
+      summary: Update a subscription
+      description: >-
+        To update a subscription (e.g. stop receiving data for a particular
+        insight type, modify Webhook destination), use the Subscription API
+        (PUT). You must provide the subscription ID and insight type to modify
+        the subscription.
+      operationId: update_subscription
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: The subscription ID
+          required: true
+          type: string
+        - in: body
+          name: subscription
+          description: The subscription
+          required: true
+          schema:
+            $ref: '#/definitions/SubscriptionRequest'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SubscriptionResponse'
+        '400':
+          description: Invalid Subscription Request
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Subscription Not Found
+        '500':
+          description: General Server Exception
+    delete:
+      tags:
+        - subscription
+      summary: Delete a subscription
+      description: >-
+        To delete a subscription, use the Subscription API (DELETE). You must
+        provide the subscription ID.
+      operationId: delete_subscription
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: subscriptionId
+          required: true
+          type: string
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid Subscription Request
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Subscription Not Found
+        '500':
+          description: General Server Exception
+  '/subscriptions/{subscriptionId}/insights/{insightName}':
+    delete:
+      tags:
+        - subscription
+      summary: Unsubscribe from an insight
+      description: Unsubscribe from an insight implementation notes
+      operationId: unsubscribe_from_an_insight
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: The subscription ID
+          required: true
+          type: string
+        - name: insightName
+          in: path
+          description: 'The insight name e.g., ''vehicle.trip.arrived'''
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Insight Subscription Deleted
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Insight Subscription Not Found
+        '500':
+          description: General Server Exception
+  '/subscriptions/{subscriptionId}/pings':
+    post:
+      tags:
+        - subscription
+      summary: Ping a subscription
+      description: Ping a subscription implementation notes
+      operationId: ping_subscription
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: The subscription ID
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Ping Sent
+        '401':
+          description: Failed Gateway Authentication
+        '404':
+          description: Subscription Not Found
+        '500':
+          description: General Server Exception
+  /tokens:
+    post:
+      tags:
+        - token
+      summary: Create Token
+      description: Use this operation to create an authorization token
+      operationId: create_token
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: createTokenRequest
+          description: Create token request
+          required: true
+          schema:
+            $ref: '#/definitions/CreateTokenRequest'
+      responses:
+        '201':
+          schema:
+            $ref: '#/definitions/CreateTokenResponse'
+        '400':
+          description: Invalid Token Request
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+  /tokens/verify:
+    post:
+      tags:
+        - token
+      summary: Verify Token
+      description: 'Verifies the authenticity of the requested token, path, and verb'
+      operationId: verify_token
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: verifyTokenRequest
+          description: Verify token request
+          required: true
+          schema:
+            $ref: '#/definitions/VerifyTokenRequest'
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/VerifyTokenResponse'
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+  '/tokens/{tokenId}':
+    delete:
+      tags:
+        - token
+      summary: Soft Token Delete
+      description: Use this operation to soft delete a token
+      operationId: delete_token
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: tokenId
+          in: path
+          description: Arity token id
+          required: true
+          type: string
+      responses:
+        '200': {}
+        '401':
+          description: Failed Gateway Authentication
+        '500':
+          description: General Server Exception
+definitions:
+  Path:
+    required:
+      - requestedPath
+      - verb
+    properties:
+      requestedPath:
+        type: string
+      verb:
+        type: string
+  Group:
+    required:
+      - groupId
+    properties:
+      groupId:
+        type: string
+  OrganizationRequest:
+    required:
+      - publiclyVisible
+    properties:
+      publiclyVisible:
+        type: boolean
+  Insights:
+    required:
+      - insights
+    properties:
+      insights:
+        type: array
+        items:
+          type: string
+  InsightEngineRequest:
+    required:
+      - insight
+      - webhookUrl
+    properties:
+      insight:
+        type: string
+      secret:
+        type: string
+      webhookUrl:
+        type: string
+  Data:
+    required:
+      - createdDate
+      - dataId
+      - payload
+      - timeSubmitted
+    properties:
+      createdDate:
+        type: string
+        description: 'Sample format: 2015-08-18T06:36:40+00:00'
+      dataId:
+        type: string
+      invalidJsonPayload:
+        type: string
+      payload:
+        type: string
+      timeSubmitted:
+        type: string
+        description: 'Sample format: 2015-08-18T06:36:40+00:00'
+  CreateTokenResponse:
+    required:
+      - body
+      - expirationDate
+      - token
+      - tokenId
+    properties:
+      body:
+        description: Submitted Request Body
+        $ref: '#/definitions/CreateTokenRequest'
+      expirationDate:
+        type: string
+        description: Date the token expires. Default is 365 days from today
+      token:
+        type: string
+        description: Authorization Token
+      tokenId:
+        type: string
+        description: ID of the CreateTokenResponse
+  User values for a sensor request:
+    properties:
+      ageRange:
+        type: string
+        description: Age Range
+        enum:
+          - 20-30
+      gender:
+        type: string
+        description: Gender
+        enum:
+          - m
+      sensorType:
+        type: string
+        description: Sensor Type
+        enum:
+          - car
+      zipCode:
+        type: string
+        description: ZIP code
+  CreateTokenRequest:
+    required:
+      - paths
+    properties:
+      metadata:
+        type: object
+        description: Optional json metadata that will be associated with the token
+      minutesValid:
+        type: integer
+        format: int64
+        description: Minutes from now that the token will be valid
+      paths:
+        type: array
+        items:
+          $ref: '#/definitions/Path'
+  SubscriptionRequest:
+    required:
+      - insights
+      - webhookUrl
+    properties:
+      insights:
+        type: array
+        items:
+          type: string
+      secret:
+        type: string
+      webhookUrl:
+        type: string
+  VerifyTokenResponse:
+    required:
+      - appId
+      - orgId
+    properties:
+      appId:
+        type: string
+        description: ID of the application that created the token
+      metadata:
+        type: object
+        description: Metadata associated with token
+      orgId:
+        type: string
+        description: ID of the organization that created the token
+  OrganizationResponse:
+    required:
+      - publiclyVisible
+    properties:
+      publiclyVisible:
+        type: boolean
+  EntitlementRequest:
+    required:
+      - subscriptionId
+    properties:
+      subscriptionId:
+        type: string
+  InsightRequest:
+    required:
+      - groupId
+      - insight
+      - sensorId
+    properties:
+      correlationId:
+        type: string
+      groupId:
+        type: string
+      insight:
+        $ref: '#/definitions/Insight'
+      sensorId:
+        type: string
+  EntitlementResponse:
+    required:
+      - entitlementId
+      - subscriptionId
+    properties:
+      entitlementId:
+        type: string
+      subscriptionId:
+        type: string
+  Insight:
+    required:
+      - name
+      - value
+    properties:
+      name:
+        type: string
+      value:
+        type: object
+  SubscriptionResponse:
+    required:
+      - insights
+      - secret
+      - subscriptionId
+      - webhookUrl
+    properties:
+      insights:
+        type: array
+        items:
+          type: string
+      secret:
+        type: string
+      subscriptionId:
+        type: string
+      webhookUrl:
+        type: string
+  VerifyTokenRequest:
+    required:
+      - requestedPath
+      - token
+      - verb
+    properties:
+      requestedPath:
+        type: string
+      token:
+        type: string
+      verb:
+        type: string
+  Page«Data»:
+    required:
+      - content
+      - page
+      - size
+      - total
+    properties:
+      content:
+        type: array
+        items:
+          $ref: '#/definitions/Data'
+      page:
+        type: integer
+        format: int32
+      size:
+        type: integer
+        format: int32
+      total:
+        type: integer
+        format: int64
+    description: Blah
+  InsightEngines:
+    required:
+      - insightEngineId
+      - insights
+      - webhookUrl
+    properties:
+      insightEngineId:
+        type: string
+      insights:
+        type: array
+        items:
+          type: string
+      webhookUrl:
+        type: string
+  Sensor:
+    required:
+      - ageRange
+      - createdDate
+      - gender
+      - groupId
+      - sensorId
+      - sensorType
+      - zipCode
+    properties:
+      ageRange:
+        type: string
+      createdDate:
+        type: string
+        format: date-time
+      gender:
+        type: string
+      groupId:
+        type: string
+      sensorId:
+        type: string
+      sensorType:
+        type: string
+      zipCode:
+        type: string
